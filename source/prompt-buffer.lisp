@@ -422,7 +422,7 @@ an integer."
                         (coefficients (substitute 1 nil fourth-attributes)))
           (width-normalization coefficients)))))
 
-(defun render-attributes (source prompt-buffer)
+(defun render-attributes (source prompt-buffer max-suggestion-count)
   (spinneret:with-html-string
     (when (prompter:suggestions source)
       (:table :class "source-content"
@@ -439,7 +439,6 @@ an integer."
                          collect (:th (spinneret::escape-string attribute-key))))
               (loop
                 ;; TODO: calculate how many lines fit in the prompt buffer
-                with max-suggestion-count = 8
                 repeat max-suggestion-count
                 with cursor-index = (prompter:current-suggestion-position prompt-buffer)
                 for suggestion-index from (max 0 (- cursor-index (- (/ max-suggestion-count 2) 1)))
@@ -534,7 +533,7 @@ This does not redraw the whole prompt buffer, use `prompt-render' for that."
                            (if (prompter:ready-p source)
                                ""
                                "(In progress...)"))
-                     (:raw (render-attributes source prompt-buffer))))))
+                     (:raw (render-attributes source prompt-buffer (round (/ 24 (length sources)))))))))
       (ps-eval :buffer prompt-buffer
         (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
               (ps:lisp
